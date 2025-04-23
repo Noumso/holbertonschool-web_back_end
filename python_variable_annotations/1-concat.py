@@ -1,4 +1,4 @@
-#!/usr/bin/bash/python3
+#!/usr/bin/env/python3
 """Type-annotaded function - concat"""
 
 
