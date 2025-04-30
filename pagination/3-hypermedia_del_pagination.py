@@ -80,4 +80,3 @@ class Server:
             'page_size': len(result_dataset),
             'data': result_dataset
         }
- 
