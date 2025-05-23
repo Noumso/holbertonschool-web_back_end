@@ -1,52 +1,23 @@
-const fs = require('fs');
+import fs from 'fs/promises';
 
-module.exports = function readDatabase(path) {
-  return new Promise(((resolve, reject) => {
-    fs.readFile(path, 'utf8', (err, paramsStudents) => {
-      if (err) {
-        reject(Error('Cannot load the database'));
-        return;
+export async function readDatabase(filePath) {
+  try {
+    const content = await fs.readFile(filePath, 'utf8');
+    const lines = content.trim().split('\n').slice(1); // remove header
+
+    const studentsByField = {};
+
+    for (const line of lines) {
+      const [firstname, , , field] = line.split(',');
+
+      if (!studentsByField[field]) {
+        studentsByField[field] = [];
       }
+      studentsByField[field].push(firstname);
+    }
 
-      let students = paramsStudents;
-      students = students.split('\n');
-      const headers = students.shift().split(',');
-
-      const groupingStudentsField = {};
-      const studentsObjects = [];
-
-      students.forEach((student) => {
-        if (student) {
-          const studentInfo = student.split(',');
-          const studentObject = {};
-
-          headers.forEach((header, index) => {
-            studentObject[header] = studentInfo[index];
-            if (header === 'field') {
-              if (groupingStudentsField[studentInfo[index]]) {
-                groupingStudentsField[studentInfo[index]].push(studentObject.firstname);
-              } else {
-                groupingStudentsField[studentInfo[index]] = [studentObject.firstname];
-              }
-            }
-          });
-          studentsObjects.push(studentObject);
-        }
-      });
-      const numberStudents = `Number of students: ${studentsObjects.length}`;
-
-      let response = `${numberStudents}\n`;
-      console.log(numberStudents);
-
-      for (const groupStudent in groupingStudentsField) {
-        if (groupingStudentsField[groupStudent]) {
-          const listStudents = groupingStudentsField[groupStudent];
-          const responseGroupStudents = `Number of students in ${groupStudent}: ${listStudents.length}. List: ${listStudents.join(', ')}`;
-          response += `${responseGroupStudents}\n`;
-          console.log(responseGroupStudents);
-        }
-      }
-      resolve(response);
-    });
-  }));
-};
+    return studentsByField;
+  } catch (error) {
+    throw new Error('Cannot load the database');
+  }
+}
